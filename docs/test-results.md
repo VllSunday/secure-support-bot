@@ -4,7 +4,7 @@ Last verified: 2026-09-28.
 
 ## Automated checks
 
-- `pytest -q`: **31 passed**
+- `pytest -q`: **32 passed**
 - Ruff: **passed**
 - Mypy: **passed**
 - Bandit: **no findings**
