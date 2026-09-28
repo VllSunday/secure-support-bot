@@ -10,6 +10,7 @@ from aiogram.types import CallbackQuery, InlineKeyboardButton, InlineKeyboardMar
 
 from secure_support_bot.application.service import SupportService
 from secure_support_bot.domain.models import ActorContext, Decision
+from secure_support_bot.security.rate_limit import SlidingWindowRateLimiter
 
 MAX_MESSAGE_LENGTH: Final = 4_000
 ORDER_PATTERN: Final = re.compile(r"\bORD-[A-Z0-9-]{8,64}\b")
@@ -44,6 +45,7 @@ def parse_message(text: str) -> ParsedMessage:
 
 def build_router(service: SupportService, *, mode: str) -> Router:
     router = Router(name="support-bot")
+    rate_limiter = SlidingWindowRateLimiter()
 
     def is_private(message: Message) -> bool:
         return message.chat.type == "private"
@@ -53,6 +55,12 @@ def build_router(service: SupportService, *, mode: str) -> Router:
             return None
         return await service.start(message.from_user.id)
 
+    async def allow_ingress(user_id: int, message: Message) -> bool:
+        if rate_limiter.allow(user_id):
+            return True
+        await message.answer("Слишком много запросов. Попробуйте позже.")
+        return False
+
     @router.message(CommandStart())
     async def handle_start(message: Message) -> None:
         if not is_private(message):
@@ -60,6 +68,8 @@ def build_router(service: SupportService, *, mode: str) -> Router:
             return
         actor = await actor_for_message(message)
         if actor is None:
+            return
+        if not await allow_ingress(actor.telegram_user_id, message):
             return
         orders = await service.list_orders(actor)
         order_lines = "\n".join(result.message for result in orders)
@@ -87,6 +97,8 @@ def build_router(service: SupportService, *, mode: str) -> Router:
         actor = await actor_for_message(message)
         if actor is None:
             return
+        if not await allow_ingress(actor.telegram_user_id, message):
+            return
         results = await service.list_orders(actor)
         await message.answer("\n".join(result.message for result in results))
 
@@ -102,6 +114,9 @@ def build_router(service: SupportService, *, mode: str) -> Router:
             return
         token = callback.data.removeprefix("refund:")
         actor = await service.start(callback.from_user.id)
+        if not rate_limiter.allow(actor.telegram_user_id):
+            await callback.answer("Слишком много запросов. Попробуйте позже.", show_alert=True)
+            return
         result = await service.confirm_refund(actor, token)
         await callback.answer(
             "Готово" if result.decision is Decision.ALLOW else "Операция остановлена",
@@ -123,6 +138,8 @@ def build_router(service: SupportService, *, mode: str) -> Router:
 
         actor = await actor_for_message(message)
         if actor is None:
+            return
+        if not await allow_ingress(actor.telegram_user_id, message):
             return
         parsed = parse_message(message.text)
         if parsed.kind == "order":
