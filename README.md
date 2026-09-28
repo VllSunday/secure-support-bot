@@ -67,6 +67,12 @@ The `/start` response always displays the active mode.
 The test suite verifies tenant isolation, prompt-injection handling, strict tool arguments, failed
 risk checks, exact confirmation, persistent state, and idempotent refunds.
 
+## Explain the security model
+
+Use [`docs/security-map.md`](docs/security-map.md) as the short architecture walkthrough. It includes
+the request flow, responsibility table, refund explanation, and common defense questions. An editable
+Excalidraw version is available at [`docs/security-map.excalidraw`](docs/security-map.excalidraw).
+
 ## Container run
 
 For a local PostgreSQL-backed run, set `TELEGRAM_BOT_TOKEN`, `COMPANY_ASSIGNMENT_SECRET`,
