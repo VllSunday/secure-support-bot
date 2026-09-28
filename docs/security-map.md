@@ -173,4 +173,4 @@ LLM и любым правам, которые они пытаются сооб�
 - LLM-режим является answer-only адаптером; обязательные проверки действий остаются
   детерминированными и серверными.
 
-Диаграмма для редактирования находится рядом в [`security-map.excalidraw`](./security-map.excalidraw).
+Диаграмма для редактирования находится рядом в [`security-map.excalidraw`](./security-map.excalidraw). Пошаговый flow Telegram → ветка документов или возврата находится в [`security-flow.excalidraw`](./security-flow.excalidraw).

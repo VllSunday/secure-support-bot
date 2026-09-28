@@ -70,8 +70,9 @@ risk checks, exact confirmation, persistent state, and idempotent refunds.
 ## Explain the security model
 
 Use [`docs/security-map.md`](docs/security-map.md) as the short architecture walkthrough. It includes
-the request flow, responsibility table, refund explanation, and common defense questions. An editable
-Excalidraw version is available at [`docs/security-map.excalidraw`](docs/security-map.excalidraw).
+the request flow, responsibility table, refund explanation, and common defense questions. The editable
+Excalidraw architecture map is available at [`docs/security-map.excalidraw`](docs/security-map.excalidraw).
+The step-by-step Telegram flow is available at [`docs/security-flow.excalidraw`](docs/security-flow.excalidraw).
 
 ## Container run
 
