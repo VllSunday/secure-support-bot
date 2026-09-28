@@ -4,7 +4,7 @@ Last verified: 2026-09-28.
 
 ## Automated checks
 
-- `pytest -q`: **32 passed**
+- `pytest -q`: **34 passed**
 - Ruff: **passed**
 - Mypy: **passed**
 - Bandit: **no findings**
@@ -12,8 +12,8 @@ Last verified: 2026-09-28.
 
 The test suite covers tenant-scoped document retrieval, own-order access, malicious
 document instructions, unknown tools, foreign-order refunds, insufficient balance,
-mandatory confirmation, risk timeout, request-id replay, persistent idempotency, and
-the educational prompt-injection explanation.
+mandatory confirmation, risk timeout in both adapters, request-id replay, persistent
+idempotency, and the educational prompt-injection explanation.
 
 ## Telegram smoke check
 
