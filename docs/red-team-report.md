@@ -31,6 +31,8 @@ bot below. Use fictional values from the target bot only.
 
 ### External bot entries
 
-No external bot links have been attached to this repository yet. Fill this section only
-after the owners explicitly share two bot links for the exercise, and keep the exact
-request, response, decision, request ID, and resulting audit evidence for each case.
+No external bot links have been attached to this repository yet. The public event team
+page was checked on 2026-09-28 and did not expose Telegram bot links for other teams.
+Fill this section only after the owners explicitly share two bot links for the exercise,
+and keep the exact request, response, decision, request ID, and resulting audit evidence
+for each case.
