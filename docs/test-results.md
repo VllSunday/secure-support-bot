@@ -20,6 +20,8 @@ the educational prompt-injection explanation.
 - Telegram `getMe`: **passed**
 - Bot username: `@llm_security_support_bot`
 - Polling startup: **passed**
+- Live smoke traffic: **5 updates handled**; the audit contains two allowed own-order
+  decisions, one profile with two scoped orders, and zero refund operations.
 - Local runtime database: created in SQLite and excluded from Git
 
 ## Manual checks still required
