@@ -6,7 +6,7 @@ from uuid import uuid4
 from secure_support_bot.application.service import SupportService
 from secure_support_bot.domain.models import ActorContext, CompanySlug, Decision
 from secure_support_bot.infrastructure.memory import InMemoryStore
-from secure_support_bot.security.risk import RiskAssessment, RiskContext
+from secure_support_bot.security.risk import AllowRiskChecker, RiskAssessment, RiskContext
 from secure_support_bot.security.tools import allowed_tool_names
 
 
@@ -147,6 +147,72 @@ async def test_confirmed_refund_is_executed_once_for_same_request_id(
     assert len(store.refund_operations) == 1
     assert store.orders[order.id].refunded_amount == 1_000
     assert store.orders[order.id].remaining_amount == 4_000
+
+
+async def test_same_request_id_cannot_be_rebound_to_another_amount(
+    service: SupportService,
+    store: InMemoryStore,
+) -> None:
+    actor = await service.start(2006)
+    order = (await store.list_owned_orders(actor))[0]
+    request_id = uuid4()
+    first = await service.propose_refund(
+        actor=actor,
+        order_id=order.id,
+        amount=1_000,
+        original_request="Верни 1000",
+        request_id=request_id,
+    )
+    rebound = await service.propose_refund(
+        actor=actor,
+        order_id=order.id,
+        amount=2_000,
+        original_request="Верни 2000",
+        request_id=request_id,
+    )
+
+    assert first.decision is Decision.REVIEW
+    assert rebound.decision is Decision.DENY
+    assert rebound.reason == "request_id_reuse_mismatch"
+
+
+class FailingRiskChecker:
+    async def assess(self, context: RiskContext) -> RiskAssessment:
+        del context
+        raise RuntimeError("temporary checker failure")
+
+
+async def test_completed_replay_returns_idempotent_result_without_risk_recheck(
+    store: InMemoryStore,
+) -> None:
+    allow_service = SupportService(
+        store=store,
+        risk_checker=AllowRiskChecker(),
+        company_assignment_secret="company-assignment-secret-for-tests",
+        confirmation_secret="confirmation-fingerprint-secret-for-tests",
+    )
+    actor = await allow_service.start(2007)
+    order = (await store.list_owned_orders(actor))[0]
+    proposal = await allow_service.propose_refund(
+        actor=actor,
+        order_id=order.id,
+        amount=1_000,
+        original_request="Верни 1000",
+    )
+    first = await allow_service.confirm_refund(actor, proposal.confirmation_token or "")
+
+    replay_service = SupportService(
+        store=store,
+        risk_checker=FailingRiskChecker(),
+        company_assignment_secret="company-assignment-secret-for-tests",
+        confirmation_secret="confirmation-fingerprint-secret-for-tests",
+    )
+    replay = await replay_service.confirm_refund(actor, proposal.confirmation_token or "")
+
+    assert first.decision is Decision.ALLOW
+    assert replay.decision is Decision.ALLOW
+    assert replay.idempotent_replay is True
+    assert len(store.refund_operations) == 1
 
 
 async def test_educational_analysis_of_injection_phrase_remains_available(

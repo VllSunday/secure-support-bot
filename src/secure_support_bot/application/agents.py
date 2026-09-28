@@ -68,7 +68,7 @@ class OpenAIAnswerAgent:
     def __init__(self, *, api_key: str, model: str, client: Any = None) -> None:
         if client is None:
             try:
-                from openai import AsyncOpenAI  # type: ignore[import-not-found]
+                from openai import AsyncOpenAI
             except ImportError as exc:  # pragma: no cover - exercised in deployment setup
                 raise RuntimeError("Install the llm extra to use BOT_MODE=llm") from exc
             client = AsyncOpenAI(api_key=api_key)

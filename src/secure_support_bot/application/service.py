@@ -202,6 +202,21 @@ class SupportService:
             expires_at=created_at + self._confirmation_ttl,
         )
         stored = await self._store.create_pending(pending)
+        if (
+            stored.actor_id != pending.actor_id
+            or stored.company != pending.company
+            or stored.order_id != pending.order_id
+            or stored.amount != pending.amount
+            or stored.currency != pending.currency
+            or stored.fingerprint != pending.fingerprint
+        ):
+            return await self._reject_tool(
+                actor,
+                "refund",
+                "request_id_reuse_mismatch",
+                order_id=order_id,
+                request_id=resolved_request_id,
+            )
         await self._store.append_audit(
             AuditEvent(
                 event_type="refund_proposed",
@@ -229,6 +244,13 @@ class SupportService:
         pending = await self._store.get_pending_by_token(confirmation_token)
         if pending is None or pending.actor_id != actor.user_id or pending.company != actor.company:
             return await self._reject_tool(actor, "refund", "confirmation_not_found")
+
+        if pending.status is PendingRefundStatus.EXECUTED:
+            return await self._store.execute_refund(
+                actor=actor,
+                pending=pending,
+                policy=self._refund_policy,
+            )
 
         risk = await assess_with_deadline(
             self._risk_checker,
