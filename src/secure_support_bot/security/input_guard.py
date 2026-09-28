@@ -43,10 +43,10 @@ def assess_input(text: str, *, max_length: int = 4_000) -> InputAssessment:
     injection_match = _INJECTION_RE.search(normalized) or (
         decoded is not None and _INJECTION_RE.search(decoded)
     )
-    if injection_match and _EDUCATIONAL_RE.search(normalized):
-        return InputAssessment(Decision.ALLOW, "educational_analysis", normalized)
     if injection_match and _ACTION_RE.search(normalized):
         return InputAssessment(Decision.DENY, "prompt_injection_action_request", normalized)
+    if injection_match and _EDUCATIONAL_RE.search(normalized):
+        return InputAssessment(Decision.ALLOW, "educational_analysis", normalized)
     if injection_match:
         return InputAssessment(Decision.REVIEW, "prompt_injection_signal", normalized)
     return InputAssessment(Decision.ALLOW, "input_allowed", normalized)
