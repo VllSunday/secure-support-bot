@@ -16,7 +16,7 @@ class Settings(BaseSettings):
     )
 
     app_env: Literal["development", "test", "production"] = "development"
-    bot_mode: Literal["mock"] = "mock"
+    bot_mode: Literal["mock", "llm"] = "mock"
     telegram_bot_token: str | None = None
     telegram_webhook_secret: str | None = None
     database_url: str = "sqlite+aiosqlite:///./secure_support.db"

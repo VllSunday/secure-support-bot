@@ -5,8 +5,8 @@ It keeps company data isolated, treats retrieved documents as untrusted input, a
 server-side authorization and explicit confirmation before any state-changing action.
 
 The current slice uses a deterministic mock responder, persistent SQLite storage, a Telegram polling
-entrypoint, strict tool schemas, input/output guards, and security-focused tests. A future LLM
-provider can be added behind the same interfaces without giving the model ownership of permissions
+entrypoint, strict tool schemas, input/output guards, and security-focused tests. An optional LLM
+provider is available behind the same interfaces without giving the model ownership of permissions
 or refund execution.
 
 ## Security invariants
@@ -40,6 +40,21 @@ run:
 
 The bot uses private chats for order and refund flows. The Telegram token stays in the environment
 and is never passed to a model or written to the audit log.
+
+## Optional LLM mode
+
+The answer layer can be switched to OpenAI without changing authorization or action code:
+
+```powershell
+.\.venv\Scripts\python.exe -m pip install -e ".[dev,llm]"
+```
+
+Set `BOT_MODE=llm`, `OPENAI_API_KEY`, and `OPENAI_MODEL` in `.env`. The OpenAI adapter receives
+only the user question and quarantined document facts as data. It has no tools, order repository,
+Telegram token, or permission context. If the provider fails or returns an empty response, the bot
+returns `review` and does not expose a partial model answer.
+
+The `/start` response always displays the active mode.
 
 ## Development checks
 

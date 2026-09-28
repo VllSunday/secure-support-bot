@@ -9,6 +9,7 @@ successfully manipulate an LLM and limits what a compromised model can observe o
 2. The identity service resolves an immutable internal actor context.
 3. Retrieval applies the company predicate before ranking documents.
 4. Language-model components receive only the minimum data needed for their role.
+   The optional answer model sees quarantined document facts as user data and has no tools.
 5. The action gateway validates a strict allow-list and never accepts permissions from model output.
 6. The refund service repeats authorization and balance checks immediately before its transaction.
 

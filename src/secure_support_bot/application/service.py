@@ -335,7 +335,23 @@ class SupportService:
             )
 
         quarantined = await self._quarantine_agent.inspect(documents)
-        message = await self._answer_agent.answer(query, quarantined)
+        try:
+            message = await self._answer_agent.answer(query, quarantined)
+        except Exception:
+            await self._store.append_audit(
+                AuditEvent(
+                    event_type="answer_agent",
+                    decision=Decision.REVIEW,
+                    reason_codes=("answer_agent_unavailable",),
+                    actor_id=actor.user_id,
+                )
+            )
+            return ServiceResult(
+                decision=Decision.REVIEW,
+                reason="answer_agent_unavailable",
+                message="Не удалось безопасно сформировать ответ. Повторите запрос позже.",
+                payload=documents,
+            )
         output_decision, output_reason, safe_message = validate_output(message)
         if output_decision is not Decision.ALLOW:
             message = safe_message
